@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- آدرس دامنه را هنگام استقرار جایگزین کنید -->
+  <url><loc>https://example.com/index.html</loc></url>
+  <url><loc>https://example.com/services/index.html</loc></url>
+  <url><loc>https://example.com/wounds/index.html</loc></url>
+  <url><loc>https://example.com/branches/index.html</loc></url>
+  <url><loc>https://example.com/gallery.html</loc></url>
+  <url><loc>https://example.com/team.html</loc></url>
+  <url><loc>https://example.com/blog/index.html</loc></url>
+  <url><loc>https://example.com/journal-talk/index.html</loc></url>
+  <url><loc>https://example.com/appointment.html</loc></url>
+  <url><loc>https://example.com/track.html</loc></url>
+  <url><loc>https://example.com/contact.html</loc></url>
+  <url><loc>https://example.com/about.html</loc></url>
+</urlset>

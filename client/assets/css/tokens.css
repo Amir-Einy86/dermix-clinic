@@ -1,0 +1,133 @@
+/* ==========================================================
+   tokens.css — Design tokens (فونت، رنگ، تایپوگرافی، فاصله، سایه)
+   همه‌ی رنگ‌ها و اندازه‌ها فقط اینجا تعریف می‌شوند؛ بقیه‌ی فایل‌ها با var(--...) استفاده می‌کنند.
+   ========================================================== */
+
+/* Vazirmatn (متغیر، وزن ۱۰۰ تا ۹۰۰) — میزبانی محلی، بدون وابستگی به Google Fonts
+   مجوز: SIL Open Font License — assets/fonts/Vazirmatn-OFL.txt */
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("../fonts/Vazirmatn-Variable.woff2") format("woff2-variations"), url("../fonts/Vazirmatn-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ----- Brand ----- */
+  --primary: #0b6e69;          /* فیروزه‌ای عمیق: دکمه‌ها و لینک‌ها */
+  --primary-hover: #095a56;
+  --primary-strong: #064542;
+  --primary-container: #13877f;
+  --primary-soft: #e3f3f1;     /* پس‌زمینه‌ی ملایم برند */
+  --primary-soft-2: #c9e9e5;
+  --primary-fixed: #9fe6df;
+  --primary-fixed-dim: #7fd3cb;
+  --on-primary: #ffffff;
+  --on-primary-container: #d8fbf7;
+
+  --accent: #e9874b;           /* مرجانی گرم: تأکیدهای کوچک */
+  --accent-soft: #fdeee4;
+
+  --secondary: #3e5a88;
+  --secondary-container: #dde7fb;
+  --secondary-fixed: #e8eefb;
+  --tertiary: #3d5a50;
+  --tertiary-container: #5b7268;
+  --on-tertiary-container: #ddf6e9;
+
+  /* ----- Neutral surfaces (slate) ----- */
+  --bg: #f5f8f9;
+  --surface: #f5f8f9;
+  --surface-lowest: #ffffff;
+  --surface-low: #eef3f5;
+  --surface-container: #e6edf0;
+  --surface-high: #dbe4e8;
+  --surface-highest: #cfdade;
+
+  --border: #e1e8eb;
+  --border-strong: #c9d4d9;
+
+  --on-surface: #11212a;
+  --on-surface-variant: #4b5b64;
+  --muted: #6c7b83;
+  --outline: #7a8a91;
+  --outline-variant: #c9d4d9;
+  --inverse-surface: #0f2a30;
+  --inverse-surface-2: #163840;
+  --inverse-on-surface: #e7f1f2;
+
+  /* ----- Semantic ----- */
+  --error: #c4312b;
+  --error-container: #fde8e6;
+  --on-error-container: #8c1a14;
+  --success: #17794a;
+  --success-container: #dff4e8;
+  --warning: #93590a;
+  --warning-container: #fdf0d7;
+  --info: #1f56a6;
+  --info-container: #e3edfb;
+
+  /* ----- Typography ----- */
+  --font-body: "Vazirmatn", "Segoe UI", Tahoma, "Noto Sans Arabic", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+  /* اندازه‌های سیال: بین موبایل و دسکتاپ نرم تغییر می‌کنند */
+  --fs-display: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+  --fs-display-mobile: 1.75rem;
+  --fs-h1: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  --fs-h2: clamp(1.25rem, 1.08rem + .7vw, 1.6rem);
+  --fs-h3: clamp(1.05rem, 1rem + .25vw, 1.2rem);
+  --fs-h4: 1.0625rem;
+  --fs-body-lg: 1.0625rem;
+  --fs-body: 0.9375rem;
+  --fs-sm: 0.8125rem;
+  --fs-xs: 0.75rem;
+  --lh-display: 1.45;
+  --lh-heading: 1.55;
+  --lh-body: 1.85;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 850;
+
+  /* ----- Spacing (پایه‌ی ۴px) ----- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+  --section-y: clamp(48px, 4vw + 28px, 88px);
+
+  /* ----- Radius & elevation ----- */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+  --shadow-xs: 0 1px 2px rgba(16, 42, 48, .06);
+  --shadow-sm: 0 1px 3px rgba(16, 42, 48, .07), 0 1px 2px rgba(16, 42, 48, .04);
+  --shadow-md: 0 6px 16px -4px rgba(16, 42, 48, .12), 0 2px 6px -2px rgba(16, 42, 48, .06);
+  --shadow-lg: 0 18px 40px -12px rgba(16, 42, 48, .22), 0 4px 12px -4px rgba(16, 42, 48, .08);
+  --shadow-brand: 0 10px 24px -10px rgba(11, 110, 105, .55);
+
+  /* ----- Layout & grid ----- */
+  --container: 1240px;
+  --container-narrow: 760px;
+  --gutter: clamp(16px, 1.2vw + 10px, 24px);
+  --page-x: clamp(16px, 3vw, 32px);
+  --header-h: 72px;
+  --topbar-h: 36px;
+
+  /* ----- Motion & focus ----- */
+  --focus-ring: 0 0 0 3px rgba(19, 135, 127, .35);
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --transition: 180ms var(--ease);
+}

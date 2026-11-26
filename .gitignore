@@ -1,0 +1,35 @@
+# ---- رمزها و تنظیمات محرمانه: هرگز commit نشوند ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ---- وابستگی‌ها و فایل‌های ساخته‌شده ----
+node_modules/
+coverage/
+*.log
+npm-debug.log*
+*.zip
+/github-publish/
+
+# ---- راهنماها و یادداشت‌های محلی پروژه ----
+/ANIMATIONS-EXPLAIN.md
+/DEPLOY.md
+/EXPLAIN.md
+/README.txt
+/SECURITY-REPORT.md
+/server/API_DOCUMENTATION.md
+/server/README.md
+
+# ---- فایل‌های آپلودشده توسط کاربران (اطلاعات بیماران) ----
+server/uploads/*
+!server/uploads/.gitkeep
+
+# ---- سیستم‌عامل و ویرایشگر ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,231 @@
+/* ==========================================================
+   animations.css — مفهوم حرکتی «ترمیم»: آرام، نرم، «نشستن» به‌جای «پریدن»
+   همه‌ی انیمیشن‌های اضافه‌شده اینجا هستند. برای حذف کامل انیمیشن‌ها:
+   لینک این فایل و دو اسکریپت animations.js / background.js را از HTMLها بردارید.
+   ========================================================== */
+
+/* ---------- ۱) توکن‌های حرکتی ---------- */
+:root {
+  --dur-fast: 180ms;   /* hover، فشار دکمه، فوکوس */
+  --dur-base: 380ms;   /* کارت‌ها، منوها */
+  --dur-slow: 680ms;   /* ورود hero، شمارش، آشکارسازی بخش‌ها */
+
+  --ease-soft: cubic-bezier(.22, .8, .24, 1);     /* سریع شروع، خیلی نرم توقف (اصلی) */
+  --ease-calm: cubic-bezier(.45, 0, .25, 1);      /* رفت‌وبرگشتی و پس‌زمینه */
+  --ease-settle: cubic-bezier(.34, 1.25, .64, 1); /* فنری خیلی ملایم، فقط بازخوردهای کوچک */
+
+  --motion-scale: 1;                               /* شدت کلی جابه‌جایی‌ها: ۰ = بدون حرکت، ۱ = عادی */
+  --reveal-distance: calc(18px * var(--motion-scale));
+  --stagger: 70ms;                                 /* فاصله‌ی زمانی بین آیتم‌های یک لیست */
+  --start-x: var(--reveal-distance);              /* «از شروع خط»: در RTL یعنی از راست */
+}
+[dir="ltr"] { --start-x: calc(-1 * var(--reveal-distance)); }
+
+/* ---------- ۲) سیستم آشکارسازی هنگام اسکرول ----------
+   فقط وقتی پنهان می‌شود که:
+     - JS کلاس js را به <html> داده باشد، و
+     - خود موتور animations.js به عنصر data-reveal داده باشد.
+   پس اگر JS اجرا نشود یا خطا بدهد، همه‌چیز عادی دیده می‌شود. */
+.js [data-reveal] {
+  opacity: 0;
+  transition:
+    opacity var(--dur-slow) var(--ease-soft),
+    transform var(--dur-slow) var(--ease-soft);
+  transition-delay: calc(var(--i, 0) * var(--stagger));
+}
+.js [data-reveal="fade"] { transform: none; }
+.js [data-reveal="rise"] { transform: translate3d(0, var(--reveal-distance), 0); }
+.js [data-reveal="start"] { transform: translate3d(var(--start-x), 0, 0); }
+.js [data-reveal="scale"] { transform: scale(calc(1 - .03 * var(--motion-scale))); }
+.js [data-reveal="bloom"] { transform: scale(calc(1 - .15 * var(--motion-scale))); transition-timing-function: var(--ease-settle); }
+
+/* «پرده»: یک لایه هم‌رنگ پس‌زمینه روی عنصر که با scaleX جمع می‌شود (فقط transform) */
+.js [data-reveal="mask"] { opacity: 1; position: relative; }
+.js [data-reveal="mask"]::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: var(--mask-color, var(--surface-container));
+  transform-origin: left center; /* در RTL پرده از راست باز می‌شود و به چپ جمع می‌شود */
+  transition: transform var(--dur-slow) var(--ease-calm);
+  transition-delay: calc(var(--i, 0) * var(--stagger));
+}
+[dir="ltr"] [data-reveal="mask"]::after { transform-origin: right center; }
+
+/* حالت دیده‌شده */
+.js [data-reveal].is-in { opacity: 1; transform: none; }
+.js [data-reveal="mask"].is-in::after { transform: scaleX(0); }
+
+/* ---------- ۳) پس‌زمینه‌ی هندسی «بافت در حال ترمیم» (background.js) ----------
+   یک بوم ثابت به اندازه‌ی صفحه، پشت همه‌ی محتوا (z-index منفی) و بدون گرفتن کلیک.
+   فقط صفحه‌های کاربران کلاس has-geo-bg می‌گیرند؛ پنل مدیریت دست نمی‌خورد. */
+.geo-bg {
+  position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1;
+  pointer-events: none; opacity: 0; transition: opacity 1200ms var(--ease-calm);
+}
+.geo-bg.is-ready { opacity: 1; }
+/* بخش‌هایی که پس‌زمینه‌ی یکدست داشتند نیمه‌شفاف می‌شوند تا شبکه از پشتشان دیده شود.
+   کارت‌ها، فرم‌ها، هدر و فوتر رنگ کامل خودشان را نگه می‌دارند (خوانایی). */
+.has-geo-bg .hero {
+  background-color: rgba(255, 255, 255, .45);
+  background-image: radial-gradient(80% 70% at 100% 0%, rgba(227, 243, 241, .55) 0%, transparent 60%), radial-gradient(60% 60% at 0% 100%, rgba(253, 238, 228, .55) 0%, transparent 60%);
+}
+.has-geo-bg .page-hero { background-image: linear-gradient(180deg, rgba(255, 255, 255, .8), rgba(255, 255, 255, .25)); }
+.has-geo-bg .section--alt { background: rgba(255, 255, 255, .6); }
+.has-geo-bg .page-hero::after { display: none; } /* نقطه‌چین تزئینی قبلی با شبکه شلوغ می‌شد */
+
+/* ---------- ۴) ورود صفحه (page load) ----------
+   هدر، hero و سربرگ صفحه‌ها را JS سایت یک‌جا می‌سازد؛ انیمیشن CSS همان لحظه‌ی ورود به صفحه اجرا می‌شود.
+   fill-mode: backwards یعنی در زمان تأخیر، حالت اول (پنهان) را نگه می‌دارد و بعد از پایان هیچ اثری باقی نمی‌گذارد. کل ورود زیر ۹۰۰ میلی‌ثانیه است. */
+@keyframes enter-rise { from { opacity: 0; transform: translate3d(0, var(--reveal-distance), 0); } }
+@keyframes enter-down { from { opacity: 0; transform: translate3d(0, calc(-8px * var(--motion-scale)), 0); } }
+@keyframes enter-start { from { opacity: 0; transform: translate3d(var(--start-x), 0, 0); } }
+@keyframes enter-fade { from { opacity: 0; } }
+@keyframes enter-settle { from { opacity: 0; transform: translate3d(0, calc(10px * var(--motion-scale)), 0) scale(calc(1 - .03 * var(--motion-scale))); } }
+
+/* هدر و نوار بالا: آرام از بالا */
+.js .topbar { animation: enter-fade var(--dur-base) var(--ease-soft) backwards; }
+.js .site-header { animation: enter-down var(--dur-base) var(--ease-soft) backwards; }
+
+/* hero صفحه‌ی اصلی: نشان ← تیتر ← بخش رنگی تیتر ← متن ← دکمه‌ها ← نکته‌ها (هر کدام ۷۰ms بعد از قبلی) */
+.js .hero__copy > * { animation: enter-rise var(--dur-base) var(--ease-soft) backwards; }
+.js .hero__copy > .eyebrow { animation-delay: 60ms; }
+.js .hero__copy > h1 { animation-delay: 130ms; }
+.js .hero__copy > .hero__lead { animation-delay: 270ms; }
+.js .hero__copy > .hero__ctas { animation-delay: 340ms; }
+.js .hero__copy > .hero__trust { animation: none; }
+.js .hero__trust > span { animation: enter-fade var(--dur-base) var(--ease-soft) backwards; }
+.js .hero__trust > span:nth-child(1) { animation-delay: 420ms; }
+.js .hero__trust > span:nth-child(2) { animation-delay: 490ms; }
+.js .hero__trust > span:nth-child(3) { animation-delay: 560ms; }
+/* بخش رنگی تیتر در جهت خواندن (از راست) می‌لغزد */
+.js .hero h1 .accent { animation: enter-start var(--dur-slow) var(--ease-soft) 200ms backwards; }
+
+/* کارت «نزدیک‌ترین نوبت‌ها»: بالا می‌آید؛ وقتی ساعت‌ها از سرور رسیدند، ردیف‌ها یکی‌یکی می‌نشینند */
+.js .next-slots { animation: enter-settle var(--dur-slow) var(--ease-soft) 180ms backwards; }
+.js .next-slots__list > li { animation: enter-settle var(--dur-base) var(--ease-settle) backwards; }
+.js .next-slots__list > li:nth-child(2) { animation-delay: 70ms; }
+.js .next-slots__list > li:nth-child(3) { animation-delay: 140ms; }
+.js .next-slots__list > li:nth-child(4) { animation-delay: 210ms; }
+.js .next-slots__list > li:nth-child(n+5) { animation-delay: 280ms; }
+
+/* سربرگ صفحه‌های داخلی: مسیر صفحه ← تیتر ← توضیح */
+.js .page-hero > .container > * { animation: enter-rise var(--dur-base) var(--ease-soft) backwards; }
+.js .page-hero > .container > .breadcrumbs { animation-name: enter-fade; }
+.js .page-hero > .container > :nth-child(2) { animation-delay: 70ms; }
+.js .page-hero > .container > :nth-child(3) { animation-delay: 140ms; }
+.js .page-hero > .container > :nth-child(n+4) { animation-delay: 210ms; }
+
+/* صفحه‌ی ورود ادمین */
+.js .login-art__inner > * { animation: enter-rise var(--dur-slow) var(--ease-soft) backwards; }
+.js .login-art__inner > :nth-child(2) { animation-delay: 80ms; }
+.js .login-art__inner > :nth-child(3) { animation-delay: 160ms; }
+.js .login-art__inner > :nth-child(4) { animation-delay: 240ms; }
+.js .login-card > * { animation: enter-rise var(--dur-base) var(--ease-soft) backwards; }
+.js .login-card > :nth-child(2) { animation-delay: 60ms; }
+.js .login-card > :nth-child(3) { animation-delay: 120ms; }
+.js .login-card > :nth-child(4) { animation-delay: 180ms; }
+.js .login-card > :nth-child(n+5) { animation-delay: 240ms; }
+
+/* ---------- ۵) حرکت‌های کوچک بازخوردی (micro-interactions) ---------- */
+@keyframes settle-pop { 40% { transform: scale(calc(1 + .06 * var(--motion-scale))); } }
+@keyframes shake-x { 20%, 60% { transform: translate3d(calc(-4px * var(--motion-scale)), 0, 0); } 40%, 80% { transform: translate3d(calc(4px * var(--motion-scale)), 0, 0); } }
+@keyframes fill-x { from { transform: scaleX(0); } }
+@keyframes grow-y { from { transform: scaleY(0); } }
+@keyframes draw-line { to { stroke-dashoffset: 0; } }
+@keyframes leave-fade { to { opacity: 0; } }
+@keyframes leave-panel { to { opacity: 0; transform: translate3d(calc(-40px * var(--motion-scale)), 0, 0); } }
+@keyframes leave-down { to { opacity: 0; transform: translate3d(0, 10px, 0) scale(.98); } }
+@keyframes ring { from { transform: scale(1); opacity: .45; } to { transform: scale(1.7); opacity: 0; } }
+
+/* جلوگیری از اسکرول افقی وقتی عنصری از کنار وارد می‌شود (clip برخلاف hidden، هدر چسبان را خراب نمی‌کند) */
+.js body { overflow-x: clip; }
+
+/* دکمه‌ها: با hover کمی بالا، با فشار کمی کوچک */
+.btn:not([disabled]):hover { transform: translate3d(0, -1px, 0); }
+.btn:not([disabled]):active { transform: scale(.97); transition-duration: 80ms; }
+.btn--icon:hover, .page-btn:hover { transform: none; }
+
+/* کارت‌ها: آیکون هنگام hover کمی «شکوفه» می‌کند */
+.card__icon { transition: background var(--transition), color var(--transition), transform var(--dur-base) var(--ease-settle); }
+.card--link:hover .card__icon { transform: scale(1.06); }
+
+/* لینک‌های فوتر و متن مقاله: خط زیر لینک از شروع خط (راست) رشد می‌کند */
+.footer__col a, .prose a, .article-body a { background: linear-gradient(currentColor, currentColor) no-repeat right bottom / 0 1px; transition: background-size var(--dur-base) var(--ease-soft); }
+.footer__col a:hover, .prose a:hover, .article-body a:hover { background-size: 100% 1px; text-decoration: none; }
+
+/* هدر هنگام اسکرول: سایه با تغییر شفافیت یک لایه (بدون تغییر ارتفاع) */
+.site-header::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-shadow: var(--shadow-md); opacity: 0; transition: opacity var(--dur-base) var(--ease-soft); }
+.site-header.is-scrolled::after { opacity: 1; }
+
+/* منوی کشویی از بالا باز می‌شود */
+.nav__menu-inner { transform-origin: top center; }
+
+/* فرم‌ها: لرزش کوتاه هنگام خطا، ظاهر شدن نرم پیام خطا */
+.input[aria-invalid="true"], .select[aria-invalid="true"], .textarea[aria-invalid="true"] { animation: shake-x 320ms var(--ease-calm) 1; }
+.field__error:not(:empty) { animation: enter-fade var(--dur-base) var(--ease-soft); }
+
+/* اعلان‌ها و پنجره‌ها: انیمیشن خروج (کلاس is-leaving را animations.js پیش از حذف می‌گذارد) */
+.is-leaving { pointer-events: none; }
+.toast.is-leaving { animation: leave-down 200ms var(--ease-calm) forwards; }
+.modal.is-leaving { animation: leave-fade 200ms var(--ease-calm) forwards; }
+.modal.is-leaving .modal__dialog { animation: leave-down 200ms var(--ease-calm) forwards; }
+.adrawer.is-leaving { animation: leave-fade 200ms var(--ease-calm) forwards; }
+.adrawer.is-leaving .adrawer__panel { animation: leave-panel 200ms var(--ease-calm) forwards; }
+
+/* دکمه‌ی واتساپ: دو «موج» آرام بعد از بارگذاری، برای دیده شدن (فقط دو بار، نه دائمی) */
+.wa-float::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid #1f9d55; opacity: 0; pointer-events: none; animation: ring 1600ms var(--ease-soft) 2500ms 2; }
+
+/* ---- نوبت‌دهی ---- */
+/* مرحله‌ی جدید از سمت درست می‌لغزد: «بعدی» از چپ (پیشروی در فارسی)، «قبلی» از راست */
+#step[data-dir="next"] > * { animation: enter-start var(--dur-base) var(--ease-soft) backwards; --start-x: calc(-1 * var(--reveal-distance)); }
+#step[data-dir="back"] > * { animation: enter-start var(--dur-base) var(--ease-soft) backwards; }
+/* نوار مراحل: مرحله‌ی فعلی نرم پر می‌شود */
+.stepper__item { position: relative; }
+.stepper__item.is-current::after { content: ""; position: absolute; top: 0; inset-inline: 0; height: 4px; border-radius: 4px; background: var(--primary); transform-origin: right center; animation: fill-x var(--dur-slow) var(--ease-soft) backwards; }
+[dir="ltr"] .stepper__item.is-current::after { transform-origin: left center; }
+/* روزها و ساعت‌ها یکی‌یکی ظاهر می‌شوند (وقتی فقط روی یک روز کلیک شده، data-quiet جلوی تکرار را می‌گیرد) */
+#panel:not([data-quiet]) .date-strip > .date-chip:not(.date-chip--ghost) { animation: enter-settle var(--dur-base) var(--ease-soft) backwards; }
+.slot-grid > .slot { animation: enter-fade var(--dur-base) var(--ease-soft) backwards; }
+.date-strip > :nth-child(2), .slot-grid > :nth-child(2) { animation-delay: 30ms; }
+.date-strip > :nth-child(3), .slot-grid > :nth-child(3) { animation-delay: 60ms; }
+.date-strip > :nth-child(4), .slot-grid > :nth-child(4) { animation-delay: 90ms; }
+.date-strip > :nth-child(5), .slot-grid > :nth-child(5) { animation-delay: 120ms; }
+.date-strip > :nth-child(6), .slot-grid > :nth-child(6) { animation-delay: 150ms; }
+.date-strip > :nth-child(n+7), .slot-grid > :nth-child(n+7) { animation-delay: 180ms; }
+/* انتخاب روز یا ساعت: «نشستن» فنری کوچک */
+.slot.is-selected, .date-chip.is-selected, .seg__btn.is-on { animation: settle-pop var(--dur-base) var(--ease-settle); }
+/* صفحه‌ی موفقیت: دایره می‌نشیند و تیک کشیده می‌شود، شماره‌ی پیگیری بعد از آن */
+.success-panel__icon { animation: enter-settle var(--dur-slow) var(--ease-settle) backwards; }
+.success-panel__icon .icon path { stroke-dasharray: 80; stroke-dashoffset: 80; animation: draw-line var(--dur-slow) var(--ease-soft) 250ms forwards; }
+.success-panel .ref-code { animation: enter-settle var(--dur-base) var(--ease-settle) 450ms backwards; }
+
+/* ---- پیگیری نوبت ---- */
+.ticket { animation: enter-settle var(--dur-slow) var(--ease-soft) backwards; }
+.progress-steps li.is-done::before { transform-origin: right center; animation: fill-x var(--dur-base) var(--ease-soft) backwards; }
+.progress-steps li:nth-child(2)::before { animation-delay: 200ms; }
+.progress-steps li:nth-child(3)::before { animation-delay: 400ms; }
+
+/* ---- پنل مدیریت (سبک) ---- */
+.admin-content > * { animation: enter-fade var(--dur-fast) var(--ease-soft) backwards; }
+.bars__bar { transform-origin: bottom center; animation: grow-y var(--dur-slow) var(--ease-soft) backwards; }
+.bars__col:nth-child(2) .bars__bar { animation-delay: 50ms; }
+.bars__col:nth-child(3) .bars__bar { animation-delay: 100ms; }
+.bars__col:nth-child(4) .bars__bar { animation-delay: 150ms; }
+.bars__col:nth-child(5) .bars__bar { animation-delay: 200ms; }
+.bars__col:nth-child(6) .bars__bar { animation-delay: 250ms; }
+.bars__col:nth-child(7) .bars__bar { animation-delay: 300ms; }
+.status-list__bar span, .cal-summary__bar span { transform-origin: right center; animation: fill-x var(--dur-slow) var(--ease-soft) 150ms backwards; }
+.admin-nav a { transition: background var(--transition), color var(--transition), transform var(--dur-fast) var(--ease-soft); }
+.admin-nav a:hover { transform: translate3d(-2px, 0, 0); }
+
+/* ---------- ۶) حرکت کمتر (تنظیم سیستم‌عامل کاربر) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .btn:not([disabled]):hover, .btn:not([disabled]):active, .card--link:hover .card__icon, .admin-nav a:hover { transform: none; }
+  .wa-float::after, .stepper__item.is-current::after, .progress-steps li::before, .bars__bar, .status-list__bar span, .cal-summary__bar span,
+  .success-panel__icon, .success-panel .ref-code, .ticket, #step > *, .date-strip > *, .slot-grid > *, .slot.is-selected, .date-chip.is-selected, .seg__btn.is-on,
+  .input, .select, .textarea, .field__error, .admin-content > *, .is-leaving, .is-leaving > * { animation: none !important; }
+  .success-panel__icon .icon path { stroke-dashoffset: 0; }
+  .js .topbar, .js .site-header, .js .hero__copy > *, .js .hero__trust > span, .js .hero h1 .accent, .js .next-slots, .js .next-slots__list > li,
+  .js .page-hero > .container > *, .js .login-art__inner > *, .js .login-card > * { animation: none !important; }
+  .js [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .js [data-reveal="mask"]::after { display: none; }
+}

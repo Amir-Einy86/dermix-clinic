@@ -1,5 +1,8 @@
 {
   "port": 5000,
+  "build": {
+    "location": "germany"
+  },
   "disks": [
     { "name": "media", "mountTo": "/data/uploads" }
   ]
